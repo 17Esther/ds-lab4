@@ -17,37 +17,6 @@ docker --version
 kubectl version --client
 ```
 
-## Local Development Setup
-
-### 1. Clone and Navigate
-```bash
-cd Lab4_JiaweiLi
-```
-
-### 2. Install Python Dependencies (Optional - for local testing)
-```bash
-# Product Service
-cd product-service
-pip install -r requirements.txt
-
-# Order Service
-cd ../order-service
-pip install -r requirements.txt
-```
-
-### 3. Run Services Locally (Optional)
-```bash
-# Terminal 1 - Product Service
-cd product-service
-python app.py
-# Service runs on http://localhost:5001
-
-# Terminal 2 - Order Service
-cd order-service
-export PRODUCT_SERVICE_URL=http://localhost:5001
-python app.py
-# Service runs on http://localhost:5002
-```
 
 ## Docker Setup
 
@@ -68,24 +37,7 @@ docker build -t order-service:latest .
 docker images | grep -E "product-service|order-service"
 ```
 
-### 3. Test Containers Locally (Optional)
-```bash
-# Run product-service
-docker run -d -p 5001:5001 --name product-service product-service:latest
 
-# Run order-service (requires product-service)
-docker run -d -p 5002:5002 \
-  -e PRODUCT_SERVICE_URL=http://host.docker.internal:5001 \
-  --name order-service order-service:latest
-
-# Test
-curl http://localhost:5001/products
-curl http://localhost:5002/health
-
-# Cleanup
-docker stop product-service order-service
-docker rm product-service order-service
-```
 
 ## Kubernetes Deployment
 
@@ -95,33 +47,13 @@ docker rm product-service order-service
 - Enable Kubernetes in Docker Desktop settings
 - Wait for cluster to be ready
 
-**Option B: Minikube**
-```bash
-minikube start
-```
 
-**Option C: Kind**
-```bash
-kind create cluster --name lab4-cluster
-```
 
 ### 2. Load Docker Images into Kubernetes
 
 **For Docker Desktop:**
 - Images are automatically available
 
-**For Minikube:**
-```bash
-eval $(minikube docker-env)
-cd product-service && docker build -t product-service:latest .
-cd ../order-service && docker build -t order-service:latest .
-```
-
-**For Kind:**
-```bash
-kind load docker-image product-service:latest --name lab4-cluster
-kind load docker-image order-service:latest --name lab4-cluster
-```
 
 ### 3. Deploy Services
 
@@ -165,12 +97,6 @@ kubectl port-forward service/product-service 5001:80
 kubectl port-forward service/order-service 5002:80
 ```
 
-**Option B: NodePort (if using Minikube)**
-```bash
-# Modify service type to NodePort in YAML files, then:
-minikube service product-service
-minikube service order-service
-```
 
 ## Testing
 
@@ -245,8 +171,6 @@ kubectl run -it --rm debug --image=busybox --restart=Never -- sh
 docker images | grep product-service
 docker images | grep order-service
 
-# For Minikube, ensure you're using minikube's Docker daemon
-eval $(minikube docker-env)
 ```
 
 ## Cleanup
